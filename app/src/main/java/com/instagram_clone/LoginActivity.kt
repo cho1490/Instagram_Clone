@@ -1,8 +1,11 @@
 package com.instagram_clone
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
@@ -15,18 +18,39 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance();
 
+        btn_email_login.setOnClickListener {
+            signInAndSignUp()
+        }
     }
 
-    fun SignInAndSignUp(){
+    private fun signInAndSignUp(){
         auth?.createUserWithEmailAndPassword(et_email.text.toString(), et_password.text.toString())?.addOnCompleteListener{
             task->
                 if(task.isSuccessful){
-
+                    moveMainPage(task.result?.user)
                 }else if(task.exception?.message.isNullOrEmpty()){
-
+                    Toast.makeText(this,task.exception?.message,Toast.LENGTH_LONG).show();
+                }else{
+                    signInEmail()
                 }
         }
-
-
     }
+
+    private fun signInEmail(){
+        auth?.signInWithEmailAndPassword(et_email.text.toString(), et_password.text.toString())?.addOnCompleteListener{
+                task->
+            if(task.isSuccessful){
+                moveMainPage(task.result?.user)
+            }else{
+                Toast.makeText(this,task.exception?.message,Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private fun moveMainPage(user:FirebaseUser?){
+        if(user != null){
+            startActivity(Intent(this,MainActivity::class.java));
+        }
+    }
+
 }

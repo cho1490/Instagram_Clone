@@ -21,13 +21,14 @@
             android:id="@+id/et_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Email"/>
+            android:hint="Email"/>
 
         <EditText
             android:id="@+id/et_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Password"/>
+            android:hint="Password"
+            android:inputType="textPassword"/>
         
         <Button
             android:id="@+id/btn_email_login"
