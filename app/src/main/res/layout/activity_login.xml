@@ -9,12 +9,14 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:src="@drawable/ic_instagram_wordmark"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_margin="20dp"
         android:orientation="vertical">
 
         <EditText
@@ -50,9 +52,10 @@
             android:layout_marginBottom="15dp"
             android:background="@drawable/btn_signin_facebook"
             android:textColor="#FFFFFF"
-            android:text="Facebook Login"/>
+            android:text="X"/>
 
         <Button
+            android:id="@+id/btn_google_login"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginLeft="20dp"
@@ -62,7 +65,7 @@
             android:theme="@style/ButtonStyle"
             android:background="@drawable/btn_signin_google"
             android:textColor="#FFFFFF"
-            android:text="Google Login"/>
+            android:text="X"/>
 
 
 
