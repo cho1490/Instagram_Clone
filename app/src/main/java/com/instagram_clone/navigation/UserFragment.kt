@@ -29,6 +29,10 @@ class UserFragment : Fragment() {
     var auth : FirebaseAuth? = null
     var currentUserUid : String? = null
 
+    companion object{
+        var PICK_PROFILE_FROM_ALBUM = 10
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -63,7 +67,27 @@ class UserFragment : Fragment() {
 
         fragmentView?.account_recyclerview?.adapter = UserFragmentRecyclerViewAdapter()
         fragmentView?.account_recyclerview?.layoutManager = GridLayoutManager(activity, 3)
+
+        // profile image click
+        fragmentView?.account_iv_profile?.setOnClickListener {
+            var photoPickerIntent = Intent(Intent.ACTION_PICK)
+            photoPickerIntent.type = "image/*"
+            activity?.startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM)
+        }
+
+        getProfileImage()
+        
         return fragmentView
+    }
+
+    fun getProfileImage(){
+        firestore?.collection("profileImages")?.document(uid!!)?.addSnapshotListener { value, error ->
+            if(value == null) return@addSnapshotListener
+            if(value.data != null){
+                var url = value?.data!!["image"]
+                Glide.with(activity!!).load(url).apply(RequestOptions.circleCropTransform()).into(fragmentView?.account_iv_profile!!)
+            }
+        }
     }
 
     inner class UserFragmentRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -84,6 +108,7 @@ class UserFragment : Fragment() {
                 notifyDataSetChanged()
             }
         }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             var width = resources.displayMetrics.widthPixels / 3
             var imageview = ImageView(parent.context)
