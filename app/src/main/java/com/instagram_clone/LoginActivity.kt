@@ -29,6 +29,11 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        moveMainPage(auth?.currentUser)
+    }
+
     private fun signInAndSignUp(){
         auth?.createUserWithEmailAndPassword(et_email.text.toString(), et_password.text.toString())?.addOnCompleteListener{
             task->
@@ -57,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
     private fun moveMainPage(user:FirebaseUser?){
         if(user != null){
             startActivity(Intent(this,MainActivity::class.java))
+            finish()
         }
     }
 }
