@@ -76,7 +76,7 @@ class UserFragment : Fragment() {
         }
 
         getProfileImage()
-        
+
         return fragmentView
     }
 
