@@ -1,12 +1,14 @@
 package com.instagram_clone.navigation
 
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +20,7 @@ import com.instagram_clone.LoginActivity
 import com.instagram_clone.MainActivity
 import com.instagram_clone.R
 import com.instagram_clone.navigation.model.ContentDTO
+import com.instagram_clone.navigation.model.FollowDTO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_user.view.*
 
@@ -63,6 +66,9 @@ class UserFragment : Fragment() {
             mainActivity?.toolbar_title_image?.visibility = View.GONE
             mainActivity?.toolbar_username?.visibility = View.VISIBLE
             mainActivity?.toolbar_btn_back?.visibility = View.VISIBLE
+            fragmentView?.account_btn_follow_signout?.setOnClickListener {
+                requestFollow()
+            }
         }
 
         fragmentView?.account_recyclerview?.adapter = UserFragmentRecyclerViewAdapter()
@@ -76,6 +82,7 @@ class UserFragment : Fragment() {
         }
 
         getProfileImage()
+        getCountOfFollowerAndFollowing()
 
         return fragmentView
     }
@@ -86,6 +93,84 @@ class UserFragment : Fragment() {
             if(value.data != null){
                 var url = value?.data!!["image"]
                 Glide.with(activity!!).load(url).apply(RequestOptions.circleCropTransform()).into(fragmentView?.account_iv_profile!!)
+            }
+        }
+    }
+
+    // follow click
+    fun requestFollow(){
+        var tsDocFollowing = firestore?.collection("users")?.document(currentUserUid!!)
+        firestore?.runTransaction { transaction ->
+            var followDTO = transaction.get(tsDocFollowing!!).toObject(FollowDTO::class.java)
+            if(followDTO == null){
+                followDTO = FollowDTO()
+                followDTO!!.followingCount = 1
+                followDTO!!.followings[uid!!] = true
+
+                transaction.set(tsDocFollowing, followDTO)
+                return@runTransaction
+            }
+
+            if(followDTO.followings.containsKey(uid)){
+                // remove following
+                followDTO?.followingCount = followDTO?.followingCount - 1
+                followDTO?.followings?.remove(uid)
+            }else{
+                // add following
+                followDTO?.followingCount = followDTO?.followingCount + 1
+                followDTO?.followings[uid!!] = true
+            }
+
+            transaction.set(tsDocFollowing, followDTO)
+            return@runTransaction
+        }
+
+        var tsDocFollower = firestore?.collection("users")?.document(uid!!)
+        firestore?.runTransaction { transaction ->
+            var followDTO = transaction.get(tsDocFollower!!).toObject(FollowDTO::class.java)
+            if(followDTO == null){
+                followDTO = FollowDTO()
+                followDTO!!.followerCount = 1
+                followDTO!!.followers[currentUserUid!!] = true
+
+                transaction.set(tsDocFollower, followDTO!!)
+                return@runTransaction
+            }
+
+            if(followDTO!!.followers.containsKey(currentUserUid)){
+                // cancel
+                followDTO!!.followerCount =   followDTO!!.followerCount - 1
+                followDTO!!.followers.remove(currentUserUid!!)
+            }else{
+                // follow
+                followDTO!!.followerCount =   followDTO!!.followerCount + 1
+                followDTO!!.followers[currentUserUid!!] = true
+            }
+
+            transaction.set(tsDocFollower, followDTO!!)
+            return@runTransaction
+        }
+    }
+
+    fun getCountOfFollowerAndFollowing(){
+        firestore?.collection("users")?.document(uid!!)?.addSnapshotListener { value, error ->
+            if(value == null) return@addSnapshotListener
+
+            var followDTO = value.toObject(FollowDTO::class.java)
+            if(followDTO?.followingCount != null){
+                 fragmentView?.account_tv_following_count?.text =  followDTO?.followingCount?.toString()
+            }
+            if(followDTO?.followerCount != null){
+                fragmentView?.account_tv_follower_count?.text = followDTO?.followerCount?.toString()
+                if(followDTO?.followers?.containsKey(currentUserUid)){
+                    fragmentView?.account_btn_follow_signout?.text = getString(R.string.follow_cancel)
+                    fragmentView?.account_btn_follow_signout?.background?.setColorFilter(ContextCompat.getColor(activity!!, R.color.colorLightGray), PorterDuff.Mode.MULTIPLY)
+                }else{
+                    if(uid != currentUserUid){
+                        fragmentView?.account_btn_follow_signout?.text = getString(R.string.follow)
+                        fragmentView?.account_btn_follow_signout?.background?.colorFilter = null
+                    }
+                }
             }
         }
     }

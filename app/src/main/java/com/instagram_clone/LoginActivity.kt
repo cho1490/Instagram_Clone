@@ -31,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        // last ID or no
         moveMainPage(auth?.currentUser)
     }
 
