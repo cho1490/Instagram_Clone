@@ -1,5 +1,6 @@
 package com.instagram_clone.navigation
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -46,7 +47,7 @@ class DetailViewFragment : Fragment(){
                 contentUidLists.clear()
                 if(value == null) return@addSnapshotListener
 
-                for(snapshot in value!!.documents){
+                for(snapshot in value.documents){
                     var item = snapshot.toObject(ContentDTO::class.java)
                     contentDTOs.add(item!!)
                     contentUidLists.add(snapshot.id)
@@ -102,6 +103,12 @@ class DetailViewFragment : Fragment(){
                 bundle.putString("userId", contentDTOs[position].userId)
                 userFragment.arguments = bundle
                 activity?.supportFragmentManager?.beginTransaction()?.replace(R.id.main_content, userFragment)?.commit()
+            }
+
+            viewHolder.detailviewitem_comment_imageview.setOnClickListener { v ->
+                var intent = Intent(v.context, CommentActivity::class.java)
+                intent.putExtra("contentUid", contentUidLists[position])
+                startActivity(intent)
             }
 
         }
