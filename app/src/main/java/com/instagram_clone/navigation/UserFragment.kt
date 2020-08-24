@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.instagram_clone.LoginActivity
 import com.instagram_clone.MainActivity
 import com.instagram_clone.R
+import com.instagram_clone.navigation.model.AlarmDTO
 import com.instagram_clone.navigation.model.ContentDTO
 import com.instagram_clone.navigation.model.FollowDTO
 import kotlinx.android.synthetic.main.activity_main.*
@@ -132,6 +133,7 @@ class UserFragment : Fragment() {
                 followDTO = FollowDTO()
                 followDTO!!.followerCount = 1
                 followDTO!!.followers[currentUserUid!!] = true
+                followerAlarm(uid!!)
 
                 transaction.set(tsDocFollower, followDTO!!)
                 return@runTransaction
@@ -145,6 +147,7 @@ class UserFragment : Fragment() {
                 // follow
                 followDTO!!.followerCount =   followDTO!!.followerCount + 1
                 followDTO!!.followers[currentUserUid!!] = true
+                followerAlarm(uid!!)
             }
 
             transaction.set(tsDocFollower, followDTO!!)
@@ -173,6 +176,16 @@ class UserFragment : Fragment() {
                 }
             }
         }
+    }
+
+    fun followerAlarm(destinationUid : String){
+        var alarmDTO = AlarmDTO()
+        alarmDTO.destinationUid = destinationUid
+        alarmDTO.userId = auth?.currentUser?.email
+        alarmDTO.uid = auth?.currentUser?.uid
+        alarmDTO.kind = 2
+        alarmDTO.timestamp = System.currentTimeMillis()
+        FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
     }
 
     inner class UserFragmentRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

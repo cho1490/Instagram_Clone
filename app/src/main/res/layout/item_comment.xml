@@ -9,7 +9,8 @@
         android:id="@+id/commentview_imageview_profile"
         android:layout_margin="7.5dp"
         android:layout_width="35dp"
-        android:layout_height="35dp"/>
+        android:layout_height="35dp"
+        android:src="@drawable/ic_account" />
     
     <TextView
         android:id="@+id/commentview_textview_profile"
