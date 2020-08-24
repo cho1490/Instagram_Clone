@@ -2,11 +2,19 @@ package com.instagram_clone.navigation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.instagram_clone.R
 import com.instagram_clone.navigation.model.ContentDTO
 import kotlinx.android.synthetic.main.activity_comment.*
+import kotlinx.android.synthetic.main.item_comment.view.*
 
 class CommentActivity : AppCompatActivity() {
 
@@ -18,6 +26,9 @@ class CommentActivity : AppCompatActivity() {
 
         contentUid = intent.getStringExtra("contentUid")
 
+        comment_recyclerview.adapter = CommentRecyclerViewAdapter()
+        comment_recyclerview.layoutManager = LinearLayoutManager(this)
+
         comment_btn_send?.setOnClickListener{
             var comment = ContentDTO.Comment()
             comment.userId = FirebaseAuth.getInstance().currentUser?.email
@@ -25,9 +36,67 @@ class CommentActivity : AppCompatActivity() {
             comment.comment = comment_edit_message?.text.toString()
             comment.timestamp = System.currentTimeMillis()
 
-            FirebaseFirestore.getInstance().collection("images").document(contentUid!!).collection("comments").document().set(comment)
+            FirebaseFirestore.getInstance()
+                .collection("images")
+                .document(contentUid!!)
+                .collection("comments")
+                .document()
+                .set(comment).addOnSuccessListener {
+                    comment_recyclerview.adapter!!.notifyDataSetChanged()
+                }
 
             comment_edit_message.setText("")
         }
+    }
+
+    inner class  CommentRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+
+        var comments : ArrayList<ContentDTO.Comment> = arrayListOf()
+
+        init {
+            FirebaseFirestore.getInstance()
+                .collection("images")
+                .document(contentUid!!)
+                .collection("comments")
+                .orderBy("timestamp")
+                .addSnapshotListener { value, error ->
+                    comments.clear()
+                    if(value == null) return@addSnapshotListener
+
+                    for(snapshot in value.documents){
+                        comments.add(snapshot.toObject(ContentDTO.Comment::class.java)!!)
+                    }
+                }
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            var view = LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false)
+            return CustomViewHolder(view)
+        }
+
+        private inner class CustomViewHolder(view : View) : RecyclerView.ViewHolder(view){
+
+        }
+
+        override fun getItemCount(): Int {
+            return comments.size
+        }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            var view = holder.itemView
+            view.commentview_textview_comment.text = comments[position].comment
+            view.commentview_textview_profile.text = comments[position].userId
+
+            FirebaseFirestore.getInstance()
+                .collection("profileImages")
+                .document(comments[position].uid!!)
+                .get()
+                .addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        var url = task.result!!["image"]
+                        Glide.with(holder.itemView.context).load(url).apply(RequestOptions.circleCropTransform()).into(view.commentview_imageview_profile)
+                    }
+                }
+        }
+
     }
 }
