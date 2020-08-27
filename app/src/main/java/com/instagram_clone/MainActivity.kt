@@ -15,6 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.storage.FirebaseStorage
 import com.instagram_clone.navigation.*
+import com.instagram_clone.navigation.util.FcmPush
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.jar.Manifest
 
@@ -28,6 +29,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         // set default screen
         bottom_navigation.selectedItemId = R.id.action_home
+        registerPushToken()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        FcmPush.instance.sendMessage("1fSUVNZX4WeHyoSTAdETPaQPMDW2","hi","bye")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
