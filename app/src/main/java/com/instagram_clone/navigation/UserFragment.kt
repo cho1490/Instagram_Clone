@@ -22,6 +22,7 @@ import com.instagram_clone.R
 import com.instagram_clone.navigation.model.AlarmDTO
 import com.instagram_clone.navigation.model.ContentDTO
 import com.instagram_clone.navigation.model.FollowDTO
+import com.instagram_clone.navigation.util.FcmPush
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_user.view.*
 
@@ -186,6 +187,9 @@ class UserFragment : Fragment() {
         alarmDTO.kind = 2
         alarmDTO.timestamp = System.currentTimeMillis()
         FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
+
+        var message = FirebaseAuth.getInstance().currentUser?.email + getString(R.string.alarm_follow)
+        FcmPush.instance.sendMessage(destinationUid, "instagram", message)
     }
 
     inner class UserFragmentRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

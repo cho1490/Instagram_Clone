@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.instagram_clone.R
 import com.instagram_clone.navigation.model.AlarmDTO
 import com.instagram_clone.navigation.model.ContentDTO
+import com.instagram_clone.navigation.util.FcmPush
 import kotlinx.android.synthetic.main.fragment_detail.view.*
 import kotlinx.android.synthetic.main.item_detail.view.*
 
@@ -144,6 +145,8 @@ class DetailViewFragment : Fragment(){
             alarmDTO.timestamp = System.currentTimeMillis()
             FirebaseFirestore.getInstance().collection("alarms").document().set(alarmDTO)
 
+            var message = FirebaseAuth.getInstance().currentUser?.email + " " + getString(R.string.alarm_favorite)
+            FcmPush.instance.sendMessage(destinationUid, "instagram", message)
         }
 
     }
